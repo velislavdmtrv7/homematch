@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Home, ArrowLeft, Plus, MapPin, BedDouble, Clock, MessageSquare, Ruler, Trash2 } from "lucide-react";
 import { navState } from "@/hooks/useBackNavigation";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const MyRequests = () => {
   const navigate = useNavigate();

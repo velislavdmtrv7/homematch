@@ -24,7 +24,7 @@ type FurnishedType = "yes" | "no" | "flexible";
 type PetsType = "yes" | "no" | "flexible";
 type AllowBrokersType = "both" | "owners_only" | "yes";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const STEPS = [
   { label: "Основни", icon: <MapPin className="h-4 w-4" /> },

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { navState } from "@/hooks/useBackNavigation";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const label = {
   property: (t: string) => t === "apartment" ? "Апартамент" : t === "house" ? "Къща" : "Без значение",

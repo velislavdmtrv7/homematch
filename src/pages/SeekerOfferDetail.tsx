@@ -18,7 +18,7 @@ import ReviewDialog from "@/components/ReviewDialog";
 import { MapContainer, TileLayer, Circle } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const label = {
   property: (t: string) => t === "apartment" ? "Апартамент" : t === "house" ? "Къща" : "Без значение",
@@ -306,3 +306,4 @@ const SeekerOfferDetail = () => {
 };
 
 export default SeekerOfferDetail;
+

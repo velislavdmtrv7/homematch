@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { ArrowLeft, Phone, Mail, User, Check, Shield } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const Profile = () => {
   const navigate = useNavigate();

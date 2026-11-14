@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Flag } from "lucide-react";
 import { toast } from "sonner";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const ReportDialog = ({ open, onOpenChange, reporterId, targetUserId, targetResponseId, targetRequestId }: any) => {
   const [reason, setReason] = useState("");

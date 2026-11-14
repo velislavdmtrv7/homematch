@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, Building2, Star } from "lucide-react";
 import { useProviderRating } from "@/hooks/useProviderRating";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const ProviderProfileDialog = ({ open, onOpenChange, provider, providerId }: any) => {
   const { rating } = useProviderRating(providerId);

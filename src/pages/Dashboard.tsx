@@ -17,7 +17,7 @@ import {
 import NotificationBell from "@/components/NotificationBell";
 import { navState } from "@/hooks/useBackNavigation";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const Dashboard = () => {
   const { user, profile, loading, signOut, activeMode, setActiveMode, addProviderRole } = useAuth();

@@ -28,7 +28,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 const MAX_PHOTOS = 8;
 const DEFAULT_CENTER: [number, number] = [42.6977, 23.3219]; // София център
 

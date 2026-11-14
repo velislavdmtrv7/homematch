@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Send, Home, Info, CheckCircle2 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 const MAX_DAILY_RESPONSES = 5;
 
 const SubmitResponse = () => {
@@ -217,3 +217,4 @@ const SubmitResponse = () => {
 };
 
 export default SubmitResponse;
+

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bell, Inbox, MessageSquare, UserCheck, XCircle, Star } from "lucide-react";
 import { navState } from "@/hooks/useBackNavigation";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const iconMap: Record<string, React.ReactNode> = {
   new_response: <MessageSquare className="h-4 w-4 text-primary" />,

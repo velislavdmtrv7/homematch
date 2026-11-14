@@ -12,7 +12,7 @@ import {
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Home, Pencil, ImageIcon, Trash2 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 interface SavedProperty {
   _id: string;
@@ -242,3 +242,4 @@ const MyProperties = () => {
 };
 
 export default MyProperties;
+

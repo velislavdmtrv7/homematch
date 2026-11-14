@@ -12,7 +12,7 @@ import {
   Pencil, AlertTriangle, Send, CheckCircle, XCircle, Phone,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api";
+import { API_URL } from "@/lib/api";
 
 const label = {
   property: (t: string) => t === "apartment" ? "Апартамент" : t === "house" ? "Къща" : "Без значение",
@@ -274,3 +274,4 @@ const RequestDetail = () => {
 };
 
 export default RequestDetail;
+
