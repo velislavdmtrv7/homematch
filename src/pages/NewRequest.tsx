@@ -18,7 +18,6 @@ import {
   Calendar, PawPrint, Building2, FileText, AlertTriangle
 } from "lucide-react";
 
-// 1. Дефинираме типовете локално (заместваме Supabase Enums)
 type PropertyType = "apartment" | "house" | "either";
 type RentalType = "long_term" | "short_term" | "flexible";
 type FurnishedType = "yes" | "no" | "flexible";
@@ -169,10 +168,6 @@ const NewRequest = () => {
     navigate("/auth");
     return null;
   }
-
-  // Забележка: В MongoDB все още не изискваме телефон при регистрация,
-  // така че временно заобикаляме това ограничение за локалния тест.
-  const phoneVerified = true; 
 
   const validateStep = (s: number): string | null => {
     if (s === 0) {
@@ -508,3 +503,4 @@ const NewRequest = () => {
 };
 
 export default NewRequest;
+

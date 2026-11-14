@@ -9,7 +9,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Home, Building2, User, ArrowLeft } from "lucide-react";
 
-// Дефинираме ролите локално, вместо да ги дърпаме от Supabase
 type UserRole = "seeker" | "broker" | "owner";
 
 const Auth = () => {
