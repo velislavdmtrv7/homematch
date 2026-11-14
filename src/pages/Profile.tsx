@@ -53,8 +53,7 @@ const Profile = () => {
     return cleaned;
   };
 
-  // DEV MODE: В MongoDB средата ползваме Dev Mode, тъй като нямаме Supabase SMS интеграция.
-  const DEV_PHONE_AUTO_CONFIRM = true;
+  const SMS_VERIFICATION_ENABLED = false;
 
   const handleSendCode = async () => {
     const formatted = formatE164(phone.trim());
@@ -66,8 +65,7 @@ const Profile = () => {
     setSendingCode(true);
 
     try {
-      if (DEV_PHONE_AUTO_CONFIRM) {
-        // Dev mode: skip OTP, save phone directly to MongoDB
+      if (!SMS_VERIFICATION_ENABLED) {
         const token = localStorage.getItem("token");
         const res = await fetch(`${API_URL}/auth/profile/${user.id}`, {
           method: "PUT",
@@ -88,7 +86,6 @@ const Profile = () => {
         await refreshProfile();
         toast.success("Телефонът е запазен успешно!");
       } else {
-        // Тук би стояла реална интеграция с Twilio/MessageBird
         setVerificationStep("sent");
         toast.success(`Кодът е изпратен на ${formatted}`);
       }
@@ -104,7 +101,6 @@ const Profile = () => {
       toast.error("Моля, въведете кода от SMS");
       return;
     }
-    // Заглушка: Тук би ставало реалното валидиране, но ние ползваме DEV_PHONE_AUTO_CONFIRM
     setVerificationStep("verified");
     toast.success("Телефонът е потвърден успешно!");
   };
@@ -204,7 +200,7 @@ const Profile = () => {
               <h2 className="text-lg font-bold">Телефонен номер</h2>
               {verificationStep === "verified" && (
                 <Badge className="ml-auto gap-1 bg-primary/10 text-primary hover:bg-primary/10">
-                  <Shield className="h-3 w-3" /> Потвърден
+                  <Shield className="h-3 w-3" /> {SMS_VERIFICATION_ENABLED ? "Потвърден" : "Записан"}
                 </Badge>
               )}
             </div>
@@ -228,7 +224,7 @@ const Profile = () => {
                   />
                 </div>
                 <Button onClick={handleSendCode} disabled={sendingCode} size="sm">
-                  {sendingCode ? "Запазване..." : DEV_PHONE_AUTO_CONFIRM ? "Потвърди номер (Автоматично)" : "Изпрати код за потвърждение"}
+                  {sendingCode ? "Запазване..." : SMS_VERIFICATION_ENABLED ? "Изпрати код за потвърждение" : "Запази номер"}
                 </Button>
               </div>
             )}
