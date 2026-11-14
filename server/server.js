@@ -14,6 +14,7 @@ const SavedProperty = require('./models/SavedProperty');
 const Notification = require('./models/Notification');
 const Review = require('./models/Review');
 const Report = require('./models/Report');
+const Feedback = require('./models/Feedback');
 
 const app = express();
 app.use(cors());
@@ -592,6 +593,26 @@ app.post('/api/reports', authenticate, async (req, res) => {
     });
     await report.save();
     res.status(201).json(report);
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
+
+app.post('/api/feedback', authenticate, async (req, res) => {
+  try {
+    const message = (req.body.message || '').trim();
+    if (!message) return res.status(400).json({ error: 'Опишете какво трябва да подобрим.' });
+    if (message.length > 2000) return res.status(400).json({ error: 'Обратната връзка е твърде дълга.' });
+
+    const allowedTypes = new Set(['bug', 'idea', 'confusing', 'other']);
+    const feedback = new Feedback({
+      user_id: req.user.id,
+      type: allowedTypes.has(req.body.type) ? req.body.type : 'other',
+      message,
+      page: typeof req.body.page === 'string' ? req.body.page.slice(0, 200) : undefined,
+      user_agent: (req.headers['user-agent'] || '').slice(0, 300),
+    });
+
+    await feedback.save();
+    res.status(201).json({ message: 'Благодарим за обратната връзка.' });
   } catch (err) { res.status(400).json({ error: err.message }); }
 });
 

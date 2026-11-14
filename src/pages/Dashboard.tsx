@@ -14,6 +14,7 @@ import {
   Warehouse, Clock, CheckCircle, XCircle, Send, Inbox, MessageSquareText
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
+import FeedbackDialog from "@/components/FeedbackDialog";
 import { navState } from "@/hooks/useBackNavigation";
 
 import { API_URL } from "@/lib/api";
@@ -95,7 +96,7 @@ const Dashboard = () => {
     fetchSeekerStats();
   }, [user, activeMode]);
 
-  const hasProviderRole = profile?.role === "broker" || profile?.role === "owner" || !!(profile as any)?.provider_type;
+  const hasProviderRole = profile?.role === "broker" || profile?.role === "owner" || !!profile?.provider_type;
 
   useEffect(() => {
     if (searchParams.get("addProvider") === "true" && profile && !hasProviderRole) {
@@ -142,7 +143,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar (Без промяна) */}
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-3 py-2 sm:px-4 sm:py-3">
           <button onClick={() => navigate("/")} className="flex items-center gap-1.5 transition-opacity hover:opacity-70 active:scale-95">
@@ -157,6 +157,12 @@ const Dashboard = () => {
               <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span className="hidden xs:inline sm:inline">Начална</span>
             </Button>
+            <FeedbackDialog
+              triggerVariant="ghost"
+              triggerSize="sm"
+              triggerClassName="h-8 px-2 sm:px-3 text-xs sm:text-sm text-muted-foreground"
+              triggerLabelClassName="hidden md:inline"
+            />
             <NotificationBell />
             <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9" onClick={() => navigate("/profile")}>
               <User className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -174,7 +180,6 @@ const Dashboard = () => {
 
       <main className="mx-auto max-w-6xl px-3 py-5 sm:px-4 sm:py-8 space-y-6 sm:space-y-8">
         
-        {/* Welcome Section (Без промяна) */}
         <div>
           <h1 className="text-[1.35rem] font-bold leading-tight sm:text-2xl md:text-3xl">
             Здравейте, {profile.full_name || "потребител"}!
@@ -190,7 +195,27 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Seeker Received Offers Summary (Без промяна) */}
+        <Card className="border-amber-300/60 bg-amber-50/70">
+          <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                <MessageSquareText className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-amber-950">Тестова версия за реална обратна връзка</h2>
+                <p className="mt-1 text-sm leading-relaxed text-amber-900/80">
+                  Докато подготвяме MVP, най-важното е да разберем къде процесът е неясен, бавен или неудобен.
+                </p>
+              </div>
+            </div>
+            <FeedbackDialog
+              triggerVariant="outline"
+              triggerClassName="shrink-0 border-amber-300 bg-background text-amber-950 hover:bg-amber-100"
+              triggerLabel="Изпрати обратна връзка"
+            />
+          </CardContent>
+        </Card>
+
         {isSeeker && seekerOfferStats && seekerOfferStats.total > 0 && (
           <Card className="cursor-pointer transition-colors hover:bg-muted/30" onClick={() => navigate("/my-received-offers", navState("dashboard-seeker"))}>
             <CardContent className="p-4 sm:p-5">
@@ -221,7 +246,6 @@ const Dashboard = () => {
           </Card>
         )}
 
-        {/* Broker Offer Summary (Без промяна) */}
         {isProvider && offerStats && offerStats.total > 0 && (
           <Card className="cursor-pointer transition-colors hover:bg-muted/30" onClick={() => navigate("/my-responses", navState("dashboard-provider"))}>
             <CardContent className="p-4 sm:p-5">
@@ -252,7 +276,6 @@ const Dashboard = () => {
           </Card>
         )}
 
-        {/* Quick Actions (Без промяна) */}
         <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
           {isSeeker && (
             <>
@@ -293,7 +316,7 @@ const Dashboard = () => {
 
       </main>
 
-      {/* Dialog за добавяне на роля (Без промяна) */}
+      {/* Dialog за добавяне на роля */}
       <Dialog open={showAddProvider} onOpenChange={setShowAddProvider}>
         <DialogContent>
           <DialogHeader><DialogTitle>Добавяне на роля Предлагащ</DialogTitle><DialogDescription>Изберете какъв тип предлагащ сте. Ще можете да превключвате между двата режима.</DialogDescription></DialogHeader>
@@ -309,3 +332,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
