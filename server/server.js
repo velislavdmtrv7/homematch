@@ -468,18 +468,6 @@ app.delete('/api/properties/saved/:id', authenticate, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GEOSPATIAL: Търсене по близост (курсова работа)
-app.get('/api/properties/nearby', authenticate, async (req, res) => {
-  const { lng, lat, maxDistance = 5000 } = req.query;
-  try {
-    if (!lng || !lat) return res.status(400).json({ error: 'Липсват координати' });
-    const nearby = await SavedProperty.find({
-      location: { $near: { $geometry: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] }, $maxDistance: parseInt(maxDistance) } }
-    });
-    res.json(nearby);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
 // ==========================================
 // 5. ИЗВЕСТИЯ
 // ==========================================
@@ -608,10 +596,9 @@ app.post('/api/reports', authenticate, async (req, res) => {
 });
 
 // ==========================================
-// 7. ADVANCED AGGREGATIONS (КУРСОВА РАБОТА)
+// 7. СТАТИСТИКИ ЗА ТАБЛОТО
 // ==========================================
 
-// 7.1. Статистика за брокер: Групиране по статус (за кутийките горе)
 app.get('/api/stats/provider/:id', authenticate, async (req, res) => {
   try {
     if (!isSameId(req.user.id, req.params.id)) {
@@ -621,75 +608,6 @@ app.get('/api/stats/provider/:id', authenticate, async (req, res) => {
     const stats = await Offer.aggregate([
       { $match: { responder_id: new mongoose.Types.ObjectId(req.params.id) } },
       { $group: { _id: "$contact_status", count: { $sum: 1 } } }
-    ]);
-    res.json(stats);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// 7.2. Пълен бизнес отчет (Опционален, ако се ползва другаде)
-app.get('/api/stats/broker-report/:id', authenticate, async (req, res) => {
-  try {
-    if (!isSameId(req.user.id, req.params.id)) {
-      return res.status(403).json({ error: 'Нямате достъп до тази статистика.' });
-    }
-
-    const report = await Offer.aggregate([
-      { $match: { responder_id: new mongoose.Types.ObjectId(req.params.id) } },
-      { $lookup: { from: 'requests', localField: 'request_id', foreignField: '_id', as: 'req' } },
-      { $unwind: '$req' },
-      { $group: { _id: '$req.city', total: { $sum: 1 }, avgPrice: { $avg: '$price' }, approved: { $sum: { $cond: [{ $eq: ['$contact_status', 'approved'] }, 1, 0] } } } },
-      { $sort: { total: -1 } }
-    ]);
-    res.json(report);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// 7.3. Анализ на пазара (Средни цени по зони)
-app.get('/api/stats/market-analysis', async (req, res) => {
-  try {
-    const market = await Offer.aggregate([
-      { $group: { _id: "$approx_location", avgPrice: { $avg: "$price" }, count: { $sum: 1 } } },
-      { $match: { count: { $gt: 0 } } },
-      { $sort: { avgPrice: 1 } }
-    ]);
-    res.json(market);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// 7.4. Анализ на пазара (Средни цени по градове за Търсещия - Дашборд)
-app.get('/api/stats/prices-by-city', async (req, res) => {
-  try {
-    const stats = await Offer.aggregate([
-      { $lookup: { from: 'requests', localField: 'request_id', foreignField: '_id', as: 'req' } },
-      { $unwind: '$req' },
-      { $group: { 
-          _id: "$req.city", 
-          avgPrice: { $avg: "$price" },
-          totalOffers: { $sum: 1 }
-      }},
-      { $sort: { totalOffers: -1 } }
-    ]);
-    res.json(stats);
-  } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// 7.5. Търсене по спални (Процентно разпределение за Брокера - Дашборд)
-app.get('/api/stats/demand-by-rooms', async (req, res) => {
-  try {
-    const totalRequests = await Request.countDocuments(); 
-    if (totalRequests === 0) return res.json([]);
-
-    const stats = await Request.aggregate([
-      { $group: { 
-          _id: "$specs.bedrooms", 
-          count: { $sum: 1 } 
-      }},
-      { $sort: { _id: 1 } },
-      { $project: {
-          bedrooms: "$_id",
-          count: 1,
-          percentage: { $round: [{ $multiply: [{ $divide: ["$count", totalRequests] }, 100] }, 1] }
-      }}
     ]);
     res.json(stats);
   } catch (err) { res.status(500).json({ error: err.message }); }

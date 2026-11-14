@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { 
   Home, Plus, Search, LogOut, User, Building2, ArrowLeftRight, 
-  Warehouse, Clock, CheckCircle, XCircle, Send, Inbox, 
-  TrendingUp, PieChart, MapPin 
+  Warehouse, Clock, CheckCircle, XCircle, Send, Inbox, MessageSquareText
 } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { navState } from "@/hooks/useBackNavigation";
@@ -30,12 +29,6 @@ const Dashboard = () => {
   const [offerStats, setOfferStats] = useState<{ total: number; pending: number; approved: number; rejected: number } | null>(null);
   const [seekerOfferStats, setSeekerOfferStats] = useState<{ total: number; pending: number; approved: number; rejected: number } | null>(null);
 
-  // ==========================================
-  // НОВИ СТЕЙТОВЕ ЗА АГРЕГАЦИИТЕ
-  // ==========================================
-  const [marketPrices, setMarketPrices] = useState<any[]>([]);
-  const [demandStats, setDemandStats] = useState<any[]>([]);
-
   useEffect(() => {
     if (!loading && !user) navigate("/auth");
   }, [loading, user, navigate]);
@@ -44,7 +37,6 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user || activeMode !== "provider") {
       setOfferStats(null);
-      setDemandStats([]);
       return;
     }
     const fetchProviderStats = async () => {
@@ -65,11 +57,6 @@ const Dashboard = () => {
           });
           setOfferStats({ total, pending, approved, rejected });
         }
-
-        // 2. АГРЕГАЦИЯ: Търсене по спални (НОВО)
-        const demandRes = await fetch(`${API_URL}/stats/demand-by-rooms`, { headers });
-        if (demandRes.ok) setDemandStats(await demandRes.json());
-
       } catch (err) { console.error(err); }
     };
     fetchProviderStats();
@@ -79,7 +66,6 @@ const Dashboard = () => {
   useEffect(() => {
     if (!user || activeMode !== "seeker") {
       setSeekerOfferStats(null);
-      setMarketPrices([]);
       return;
     }
     const fetchSeekerStats = async () => {
@@ -104,11 +90,6 @@ const Dashboard = () => {
             setSeekerOfferStats({ total: offers.length, pending, approved, rejected });
           }
         }
-
-        // 2. АГРЕГАЦИЯ: Средни цени по градове (НОВО)
-        const marketRes = await fetch(`${API_URL}/stats/prices-by-city`, { headers });
-        if (marketRes.ok) setMarketPrices(await marketRes.json());
-
       } catch (err) { console.error(err); }
     };
     fetchSeekerStats();
@@ -309,73 +290,6 @@ const Dashboard = () => {
             </>
           )}
         </div>
-
-        {/* ========================================== */}
-        {/* ДИНАМИЧНИ АГРЕГАЦИИ (НОВАТА ЧАСТ ЗА КУРСОВАТА) */}
-        {/* ========================================== */}
-        
-        {/* СТАТИСТИКА 1: ЗА ТЪРСЕЩИЯ (Средни цени) */}
-        {isSeeker && marketPrices.length > 0 && (
-          <Card className="shadow-sm border-blue-500/20 mt-8">
-            <CardHeader className="pb-2 bg-blue-500/5 border-b border-blue-500/10">
-              <CardTitle className="text-base font-bold flex items-center gap-2 text-blue-800">
-                <TrendingUp className="h-5 w-5" />
-                Пазарен обзор: Средни цени по градове
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 p-0">
-              <div className="px-5 pb-2 text-sm text-muted-foreground">
-                Актуална извадка на база предложени оферти в платформата.
-              </div>
-              <div className="divide-y">
-                {marketPrices.map((stat, i) => (
-                  <div key={i} className="flex justify-between items-center p-4 hover:bg-muted/30">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium text-sm sm:text-base">{stat._id || "Неизвестен"}</span>
-                    </div>
-                    <div className="flex items-center gap-3 sm:gap-4 text-sm">
-                      <span className="text-xs sm:text-sm text-muted-foreground">{stat.totalOffers} оферти</span>
-                      <Badge variant="outline" className="bg-white font-bold text-xs sm:text-sm">~ {Math.round(stat.avgPrice)} €</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* СТАТИСТИКА 2: ЗА БРОКЕРА (Търсене по спални) */}
-        {isProvider && demandStats.length > 0 && (
-          <Card className="shadow-sm border-amber-500/20 mt-8">
-            <CardHeader className="pb-2 bg-amber-500/5 border-b border-amber-500/10">
-              <CardTitle className="text-base font-bold flex items-center gap-2 text-amber-800">
-                <PieChart className="h-5 w-5" />
-                Пазарно търсене: Какви имоти се търсят?
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 p-5 space-y-4">
-              <div className="text-sm text-muted-foreground mb-4">
-                Процентно разпределение на активните заявки спрямо броя спални.
-              </div>
-              
-              {demandStats.map((stat, i) => (
-                <div key={i} className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium">{stat.bedrooms} {stat.bedrooms === 1 ? "спалня (Двустаен)" : stat.bedrooms === 2 ? "спални (Тристаен)" : "спални"}</span>
-                    <span className="font-bold">{stat.percentage}% <span className="text-muted-foreground font-normal text-xs">({stat.count} заявки)</span></span>
-                  </div>
-                  <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-amber-500 rounded-full transition-all duration-1000" 
-                      style={{ width: `${stat.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
 
       </main>
 
