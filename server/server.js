@@ -17,7 +17,9 @@ const Report = require('./models/Report');
 const Feedback = require('./models/Feedback');
 
 const app = express();
-app.use(cors());
+if (process.env.NODE_ENV !== 'production') {
+  app.use(cors({ origin: 'http://localhost:8080' }));
+}
 app.use(express.json({ limit: '50mb' })); // Поддръжка на Base64 снимки
 
 if (!process.env.JWT_SECRET) {
