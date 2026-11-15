@@ -20,7 +20,16 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Поддръжка на Base64 снимки
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
+if (!process.env.JWT_SECRET) {
+  console.error('Missing JWT_SECRET. Set it in server/.env');
+  process.exit(1);
+}
+if (!process.env.MONGO_URI) {
+  console.error('Missing MONGO_URI. Set it in server/.env');
+  process.exit(1);
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const isSameId = (a, b) => String(a) === String(b);
 
