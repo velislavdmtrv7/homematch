@@ -20,7 +20,15 @@ const app = express();
 if (process.env.NODE_ENV !== 'production') {
   app.use(cors({ origin: 'http://localhost:8080' }));
 }
-app.use(express.json({ limit: '50mb' })); // Поддръжка на Base64 снимки
+// Лимит на тялото на заявката: малък навсякъде, по-голям само за маршрутите със снимки (Base64).
+// 15mb, защото MongoDB не приема документ над 16 MB.
+const smallJson = express.json({ limit: '100kb' });
+const photoJson = express.json({ limit: '15mb' });
+
+app.use((req, res, next) => {
+  const hasPhotos = req.path.startsWith('/api/properties/saved') || req.path.startsWith('/api/offers');
+  return hasPhotos ? photoJson(req, res, next) : smallJson(req, res, next);
+});
 
 if (!process.env.JWT_SECRET) {
   console.error('Missing JWT_SECRET. Set it in server/.env');
