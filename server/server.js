@@ -43,6 +43,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const isSameId = (a, b) => String(a) === String(b);
 
+// Грешка в маршрут: пълната грешка в лога, кратко съобщение към клиента.
+const sendError = (res, err, status = 500) => {
+  console.error(err);
+  res.status(status).json({ error: status === 400 ? 'Невалидни данни.' : 'Възникна грешка на сървъра.' });
+};
+
 const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -91,7 +97,7 @@ app.post('/api/auth/register', async (req, res) => {
     
     const token = jwt.sign({ id: newUser._id, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ user: { _id: newUser._id, email: newUser.email, full_name: newUser.full_name, role: newUser.role, phone: newUser.phone, provider_type: newUser.provider_type }, token });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.post('/api/auth/login', async (req, res) => {
@@ -104,7 +110,7 @@ app.post('/api/auth/login', async (req, res) => {
     
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ user: { _id: user._id, email: user.email, full_name: user.full_name, role: user.role, phone: user.phone, provider_type: user.provider_type }, token });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.put('/api/auth/profile/:userId', authenticate, async (req, res) => {
@@ -120,14 +126,14 @@ app.put('/api/auth/profile/:userId', authenticate, async (req, res) => {
 
     const updatedUser = await User.findByIdAndUpdate(req.params.userId, allowed, { new: true }).select('-password');
     res.json(updatedUser);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.get('/api/users/public/:id', authenticate, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('full_name role provider_type');
     res.json(user);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ==========================================
@@ -143,14 +149,14 @@ app.post('/api/requests', authenticate, async (req, res) => {
     });
     await newRequest.save();
     res.status(201).json(newRequest);
-  } catch (err) { res.status(400).json({ error: err.message }); }
+  } catch (err) { sendError(res, err, 400); }
 });
 
 app.get('/api/requests', authenticate, async (req, res) => {
   try {
     const requests = await Request.find({ status: 'active', expires_at: { $gt: new Date() } }).sort({ createdAt: -1 });
     res.json(requests);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.get('/api/requests/:id', authenticate, async (req, res) => {
@@ -158,7 +164,7 @@ app.get('/api/requests/:id', authenticate, async (req, res) => {
     const request = await Request.findById(req.params.id);
     if (!request) return res.status(404).json({ error: 'Заявката не е намерена' });
     res.json(request);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.put('/api/requests/:id', authenticate, async (req, res) => {
@@ -171,7 +177,7 @@ app.put('/api/requests/:id', authenticate, async (req, res) => {
 
     const updated = await Request.findByIdAndUpdate(req.params.id, normalizeRequestPayload(req.body), { new: true });
     res.json(updated);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.delete('/api/requests/:id', authenticate, async (req, res) => {
@@ -185,7 +191,7 @@ app.delete('/api/requests/:id', authenticate, async (req, res) => {
     await Offer.deleteMany({ request_id: req.params.id });
     await Request.findByIdAndDelete(req.params.id);
     res.json({ message: 'Заявката е изтрита' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.get('/api/requests/user/:userId', authenticate, async (req, res) => {
@@ -196,7 +202,7 @@ app.get('/api/requests/user/:userId', authenticate, async (req, res) => {
 
     const requests = await Request.find({ seeker_id: req.params.userId }).sort({ createdAt: -1 });
     res.json(requests);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ==========================================
@@ -256,7 +262,7 @@ app.post('/api/offers', authenticate, async (req, res) => {
     }
 
     res.status(201).json(newOffer);
-  } catch (err) { res.status(400).json({ error: err.message }); }
+  } catch (err) { sendError(res, err, 400); }
 });
 
 app.get('/api/offers/provider/:id', authenticate, async (req, res) => {
@@ -267,7 +273,7 @@ app.get('/api/offers/provider/:id', authenticate, async (req, res) => {
 
     const offers = await Offer.find({ responder_id: req.params.id });
     res.json(offers);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.get('/api/offers/seeker/:userId', authenticate, async (req, res) => {
@@ -279,7 +285,7 @@ app.get('/api/offers/seeker/:userId', authenticate, async (req, res) => {
     const userRequests = await Request.find({ seeker_id: req.params.userId });
     const offers = await Offer.find({ request_id: { $in: userRequests.map(r => r._id) } });
     res.json(offers);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.get('/api/offers/daily-count/:userId', authenticate, async (req, res) => {
@@ -290,7 +296,7 @@ app.get('/api/offers/daily-count/:userId', authenticate, async (req, res) => {
 
     const count = await Offer.countDocuments({ responder_id: req.params.userId, createdAt: { $gte: new Date(new Date().setHours(0,0,0,0)) } });
     res.json(count);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // Промяна на статус на оферта -> ИЗВЕСТИЕ ДО БРОКЕРА
@@ -326,7 +332,7 @@ app.put('/api/offers/:id/status', authenticate, async (req, res) => {
     await notification.save();
 
     res.json(updated);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.get('/api/offers/request/:requestId', authenticate, async (req, res) => {
@@ -341,7 +347,7 @@ app.get('/api/offers/request/:requestId', authenticate, async (req, res) => {
 
     const offers = await Offer.find({ request_id: req.params.requestId, responder_id: req.user.id }).sort({ createdAt: -1 });
     res.json(offers);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // СТАНДАРТЕН ИЗГЛЕД НА ОФЕРТА (За брокера)
@@ -355,7 +361,7 @@ app.get('/api/offers/:id', authenticate, async (req, res) => {
     }
     const responder = await User.findById(offer.responder_id).select('full_name role phone');
     res.json({ ...offer.toObject(), responder_profile: responder, request_city: request?.city });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ИЗГЛЕД С ГЕО-ПРИВАТНОСТ (За търсещия - Privacy Circle)
@@ -391,7 +397,7 @@ app.get('/api/offers/seeker-view/:id', authenticate, async (req, res) => {
     }
 
     res.json({ ...offerData, responder_profile: responder, request_city: request?.city });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ВЗЕМАНЕ НА РЕЗЮМЕ ПО ЗАЯВКА И БРОКЕР
@@ -411,7 +417,7 @@ app.get('/api/offers/request-summary/:requestId/:brokerId', authenticate, async 
       seekerPhone = seeker?.phone;
     }
     res.json({ request, offers, seekerPhone });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ==========================================
@@ -422,7 +428,7 @@ app.post('/api/properties/saved', authenticate, async (req, res) => {
     const newProperty = new SavedProperty({ ...req.body, provider_id: req.user.id });
     await newProperty.save();
     res.status(201).json(newProperty);
-  } catch (err) { res.status(400).json({ error: err.message }); }
+  } catch (err) { sendError(res, err, 400); }
 });
 
 app.get('/api/properties/saved/user/:providerId', authenticate, async (req, res) => {
@@ -433,7 +439,7 @@ app.get('/api/properties/saved/user/:providerId', authenticate, async (req, res)
 
     const properties = await SavedProperty.find({ provider_id: req.params.providerId }).sort({ createdAt: -1 });
     res.json(properties);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.get('/api/properties/saved/:id', authenticate, async (req, res) => {
@@ -444,7 +450,7 @@ app.get('/api/properties/saved/:id', authenticate, async (req, res) => {
       return res.status(403).json({ error: 'Нямате достъп до този имот.' });
     }
     res.json(property);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.put('/api/properties/saved/:id', authenticate, async (req, res) => {
@@ -457,7 +463,7 @@ app.put('/api/properties/saved/:id', authenticate, async (req, res) => {
 
     const updated = await SavedProperty.findByIdAndUpdate(req.params.id, { ...req.body, provider_id: req.user.id }, { new: true });
     res.json(updated);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.put('/api/properties/saved/:id/status', authenticate, async (req, res) => {
@@ -470,7 +476,7 @@ app.put('/api/properties/saved/:id/status', authenticate, async (req, res) => {
 
     const updated = await SavedProperty.findByIdAndUpdate(req.params.id, { status: req.body.status }, { new: true });
     res.json(updated);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.delete('/api/properties/saved/:id', authenticate, async (req, res) => {
@@ -485,7 +491,7 @@ app.delete('/api/properties/saved/:id', authenticate, async (req, res) => {
     await Offer.deleteMany({ saved_property_id: req.params.id, contact_status: { $ne: 'approved' } });
     await SavedProperty.findByIdAndDelete(req.params.id);
     res.json({ message: 'Имотът е изтрит' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ==========================================
@@ -499,7 +505,7 @@ app.get('/api/notifications/:userId', authenticate, async (req, res) => {
 
     const notifications = await Notification.find({ user_id: req.params.userId }).sort({ createdAt: -1 }).limit(50);
     res.json(notifications);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.get('/api/notifications/unread-count/:userId', authenticate, async (req, res) => {
@@ -510,7 +516,7 @@ app.get('/api/notifications/unread-count/:userId', authenticate, async (req, res
 
     const count = await Notification.countDocuments({ user_id: req.params.userId, read: false });
     res.json({ count });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 app.put('/api/notifications/read-all/:userId', authenticate, async (req, res) => {
@@ -521,7 +527,7 @@ app.put('/api/notifications/read-all/:userId', authenticate, async (req, res) =>
 
     await Notification.updateMany({ user_id: req.params.userId, read: false }, { $set: { read: true } });
     res.json({ message: 'Done' });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // ==========================================
@@ -538,7 +544,7 @@ app.get('/api/reviews/stats/:providerId', async (req, res) => {
     ]);
     // Връщаме оригиналния формат (avgRating), за да работи с твоя useProviderRating hook!
     res.json(stats[0] || { avgRating: 0, count: 0 });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // Зареждане на последните ревюта за профила (с имената на потребителите)
@@ -549,7 +555,7 @@ app.get('/api/reviews/provider/:providerId', async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5); // Взимаме само последните 5
     res.json(reviews);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // Проверка дали потребител вече е оценил даден брокер
@@ -565,7 +571,7 @@ app.get('/api/reviews/check/:providerId/:reviewerId', authenticate, async (req, 
     });
     // Връщаме true, ако има намерено ревю
     res.json({ hasReviewed: !!review });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
 });
 
 // Добавяне/Обновяване на ревю (ЗАБРАНА ЗА ДУБЛИРАНЕ)
@@ -593,7 +599,7 @@ app.post('/api/reviews', authenticate, async (req, res) => {
 
     const review = await Review.findOneAndUpdate(filter, update, { upsert: true, new: true });
     res.json(review);
-  } catch (err) { res.status(400).json({ error: err.message }); }
+  } catch (err) { sendError(res, err, 400); }
 });
 
 app.post('/api/reports', authenticate, async (req, res) => {
@@ -612,7 +618,7 @@ app.post('/api/reports', authenticate, async (req, res) => {
     });
     await report.save();
     res.status(201).json(report);
-  } catch (err) { res.status(400).json({ error: err.message }); }
+  } catch (err) { sendError(res, err, 400); }
 });
 
 app.post('/api/feedback', authenticate, async (req, res) => {
@@ -632,7 +638,7 @@ app.post('/api/feedback', authenticate, async (req, res) => {
 
     await feedback.save();
     res.status(201).json({ message: 'Благодарим за обратната връзка.' });
-  } catch (err) { res.status(400).json({ error: err.message }); }
+  } catch (err) { sendError(res, err, 400); }
 });
 
 // ==========================================
@@ -650,7 +656,18 @@ app.get('/api/stats/provider/:id', authenticate, async (req, res) => {
       { $group: { _id: "$contact_status", count: { $sum: 1 } } }
     ]);
     res.json(stats);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) { sendError(res, err); }
+});
+
+// Последен middleware: хваща грешки, които не са минали през catch (напр. 413 от express.json).
+// Express го разпознава като error handler по четирите параметъра.
+app.use((err, req, res, next) => {
+  console.error(err);
+  const status = err.status || 500;
+  const message = status === 413 ? 'Заявката е твърде голяма.'
+    : status < 500 ? 'Невалидна заявка.'
+    : 'Възникна грешка на сървъра.';
+  res.status(status).json({ error: message });
 });
 
 const PORT = process.env.PORT || 5000;
