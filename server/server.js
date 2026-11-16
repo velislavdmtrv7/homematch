@@ -82,6 +82,13 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Успешна връзка с MongoDB!'))
   .catch((err) => console.error('❌ Грешка при връзка с MongoDB:', err));
 
+  // Health check: 200, ако API-то върви и е свързано с базата; иначе 503.
+// Ползват го Docker healthcheck-ът и проверката след deploy.
+app.get('/api/health', (req, res) => {
+  const dbOk = mongoose.connection.readyState === 1; // 1 = connected
+  res.status(dbOk ? 200 : 503).json({ status: dbOk ? 'ok' : 'db_unavailable' });
+});
+
 // ==========================================
 // 1. АВТЕНТИКАЦИЯ И ПРОФИЛ
 // ==========================================
