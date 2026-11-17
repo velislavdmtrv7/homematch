@@ -1,0 +1,8 @@
+[Unit]
+Description=HomeMatch: pull and deploy the newest approved version
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/homematch-deploy
