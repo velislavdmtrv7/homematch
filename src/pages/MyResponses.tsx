@@ -11,6 +11,7 @@ import {
 import { navState } from "@/hooks/useBackNavigation";
 
 import { API_URL } from "@/lib/api";
+import { Offer, RentalRequest } from "@/types/api";
 
 const propertyLabel = (t: string) =>
   t === "apartment" ? "Апартамент" : t === "house" ? "Къща" : "Друго";
@@ -23,7 +24,7 @@ const furnishedLabel = (t: string) =>
 interface RequestGroup {
   request_id: string;
   request_city: string;
-  offers: any[];
+  offers: (Offer & { seeker_phone: string | null })[];
 }
 
 const MyResponses = () => {
@@ -45,7 +46,7 @@ const MyResponses = () => {
 
         // 1. Вземаме всички оферти на брокера
         const offersRes = await fetch(`${API_URL}/offers/provider/${user.id}`, { headers });
-        const offersData = await offersRes.json();
+        const offersData: Offer[] = await offersRes.json();
 
         if (!offersData || offersData.length === 0) {
           setGroups([]);
@@ -54,21 +55,21 @@ const MyResponses = () => {
         }
 
         // 2. Събираме уникалните ID-та на заявките и търсещите
-        const requestIds = Array.from(new Set(offersData.map((o: any) => o.request_id)));
+        const requestIds = Array.from(new Set(offersData.map((o) => o.request_id)));
         
         // 3. Вземаме детайли за заявките (за да знаем града) и телефоните на търсещите (при одобрение)
-        const requestsMap: Record<string, any> = {};
+        const requestsMap: Record<string, RentalRequest> = {};
         const seekersMap: Record<string, string> = {};
 
         await Promise.all([
-          ...requestIds.map(async (rid: any) => {
+          ...requestIds.map(async (rid: string) => {
             const rRes = await fetch(`${API_URL}/requests/${rid}`, { headers });
             if (rRes.ok) {
               const rData = await rRes.json();
               requestsMap[rid] = rData;
               
               // Ако има поне една одобрена оферта за тази заявка, вземаме телефона на търсещия
-              const hasApproved = offersData.some((o: any) => o.request_id === rid && o.contact_status === "approved");
+              const hasApproved = offersData.some((o) => o.request_id === rid && o.contact_status === "approved");
               if (hasApproved) {
                 const sRes = await fetch(`${API_URL}/offers/request-summary/${rid}/${user.id}`, { headers });
                 if (sRes.ok) {

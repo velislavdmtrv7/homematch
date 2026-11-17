@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { API_URL } from "@/lib/api";
+import { Offer, RentalRequest } from "@/types/api";
 
 const label = {
   property: (t: string) => t === "apartment" ? "Апартамент" : t === "house" ? "Къща" : "Без значение",
@@ -34,14 +35,14 @@ const RequestDetail = () => {
     fallbackPath: highlightId ? "/my-responses" : "/browse",
   });
   
-  const [request, setRequest] = useState<any>(null);
+  const [request, setRequest] = useState<RentalRequest | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Статистики за създателя (Seeker)
   const [offerCounts, setOfferCounts] = useState({ all: 0, pending: 0, approved: 0, rejected: 0 });
 
   // Оферти, направени от този брокер по тази заявка
-  const [brokerResponses, setBrokerResponses] = useState<any[]>([]);
+  const [brokerResponses, setBrokerResponses] = useState<Offer[]>([]);
   const [seekerPhone, setSeekerPhone] = useState<string | null>(null);
 
   useEffect(() => {
@@ -64,11 +65,11 @@ const RequestDetail = () => {
         // 2. Взимаме всички оферти по тази заявка
         const offersRes = await fetch(`${API_URL}/offers/request/${id}`, { headers });
         if (offersRes.ok) {
-          const offersData = await offersRes.json();
+          const offersData: Offer[] = await offersRes.json();
           
           // Изчисляваме бройки за търсещия
           let pending = 0, approved = 0, rejected = 0;
-          offersData.forEach((r: any) => {
+          offersData.forEach((r) => {
             const s = r.contact_status || "pending";
             if (s === "approved") approved++;
             else if (s === "rejected") rejected++;
@@ -77,11 +78,11 @@ const RequestDetail = () => {
           setOfferCounts({ all: offersData.length, pending, approved, rejected });
 
           // Филтрираме само офертите на текущия брокер
-          const myResps = offersData.filter((r: any) => r.responder_id === user.id);
+          const myResps = offersData.filter((r) => r.responder_id === user.id);
           setBrokerResponses(myResps);
 
           // Ако има одобрена оферта, взимаме телефона през защитения summary endpoint
-          const hasApproved = myResps.some((r: any) => r.contact_status === "approved");
+          const hasApproved = myResps.some((r) => r.contact_status === "approved");
           if (hasApproved) {
             const summaryRes = await fetch(`${API_URL}/offers/request-summary/${id}/${user.id}`, { headers });
             if (summaryRes.ok) {
@@ -105,7 +106,7 @@ const RequestDetail = () => {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4">
         <span className="text-muted-foreground">Заявката не е намерена.</span>
-        <Button variant="outline" onClick={() => navigate(-1 as any)}>Назад</Button>
+        <Button variant="outline" onClick={() => navigate(-1)}>Назад</Button>
       </div>
     );
   }

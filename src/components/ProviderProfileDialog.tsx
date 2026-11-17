@@ -5,10 +5,18 @@ import { User, Building2, Star } from "lucide-react";
 import { useProviderRating } from "@/hooks/useProviderRating";
 
 import { API_URL } from "@/lib/api";
+import { PublicProfile, Review } from "@/types/api";
 
-const ProviderProfileDialog = ({ open, onOpenChange, provider, providerId }: any) => {
+interface ProviderProfileDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  provider: Pick<PublicProfile, "full_name" | "role"> | null;
+  providerId?: string;
+}
+
+const ProviderProfileDialog = ({ open, onOpenChange, provider, providerId }: ProviderProfileDialogProps) => {
   const { rating } = useProviderRating(providerId);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
     if (!open || !providerId) { setReviews([]); return; }

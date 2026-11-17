@@ -7,7 +7,16 @@ import { toast } from "sonner";
 
 import { API_URL } from "@/lib/api";
 
-const ReportDialog = ({ open, onOpenChange, reporterId, targetUserId, targetResponseId, targetRequestId }: any) => {
+interface ReportDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  reporterId: string;
+  targetUserId?: string;
+  targetResponseId?: string;
+  targetRequestId?: string;
+}
+
+const ReportDialog = ({ open, onOpenChange, reporterId, targetUserId, targetResponseId, targetRequestId }: ReportDialogProps) => {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 

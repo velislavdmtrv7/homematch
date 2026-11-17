@@ -36,7 +36,8 @@ const PhotoLightbox = ({ photos, initialIndex, open, onOpenChange }: PhotoLightb
     if (touchStart === null) return;
     const diff = e.changedTouches[0].clientX - touchStart;
     if (Math.abs(diff) > 50) {
-      diff > 0 ? goPrev() : goNext();
+      if (diff > 0) goPrev();
+      else goNext();
     }
     setTouchStart(null);
   };

@@ -11,6 +11,7 @@ import {
 import { navState } from "@/hooks/useBackNavigation";
 
 import { API_URL } from "@/lib/api";
+import { ApiPhoto, Offer } from "@/types/api";
 
 const label = {
   property: (t: string) => t === "apartment" ? "Апартамент" : t === "house" ? "Къща" : "Без значение",
@@ -23,7 +24,7 @@ interface RequestGroup {
   budget: { min: number; max: number };
   specs: { bedrooms: number; min_area_sqm: number };
   status: string;
-  offers: any[];
+  offers: (Offer & { cover_url?: string })[];
 }
 
 const MyReceivedOffers = () => {
@@ -62,14 +63,14 @@ const MyReceivedOffers = () => {
       const groupList: RequestGroup[] = [];
       
       for (const req of requests) {
-        const reqOffers = allOffers.filter((o: any) => o.request_id === req._id);
+        const reqOffers = allOffers.filter((o: Offer) => o.request_id === req._id);
         if (reqOffers.length === 0) continue;
 
         groupList.push({
           ...req,
-          offers: reqOffers.map((o: any) => {
+          offers: reqOffers.map((o: Offer) => {
             // Намираме cover снимката от масива photos в MongoDB документа
-            const coverPhoto = o.photos?.find((p: any) => p.is_cover)?.data;
+            const coverPhoto = o.photos?.find((p: ApiPhoto) => p.is_cover)?.data;
             return { ...o, cover_url: coverPhoto };
           })
         });

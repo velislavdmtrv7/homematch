@@ -18,6 +18,7 @@ import FeedbackDialog from "@/components/FeedbackDialog";
 import { navState } from "@/hooks/useBackNavigation";
 
 import { API_URL } from "@/lib/api";
+import { ContactStatus, Offer } from "@/types/api";
 
 const Dashboard = () => {
   const { user, profile, loading, signOut, activeMode, setActiveMode, addProviderRole } = useAuth();
@@ -50,7 +51,7 @@ const Dashboard = () => {
         if (res.ok) {
           const data = await res.json();
           let total = 0, pending = 0, approved = 0, rejected = 0;
-          data.forEach((item: any) => {
+          data.forEach((item: { _id: ContactStatus; count: number }) => {
             total += item.count;
             if (item._id === "pending") pending = item.count;
             if (item._id === "approved") approved = item.count;
@@ -82,7 +83,7 @@ const Dashboard = () => {
             setSeekerOfferStats({ total: 0, pending: 0, approved: 0, rejected: 0 });
           } else {
             let pending = 0, approved = 0, rejected = 0;
-            offers.forEach((offer: any) => {
+            offers.forEach((offer: Offer) => {
               const s = offer.contact_status || "pending";
               if (s === "approved") approved++;
               else if (s === "rejected") rejected++;

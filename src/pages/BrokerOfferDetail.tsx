@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { API_URL } from "@/lib/api";
+import { Offer, RentalRequest } from "@/types/api";
 
 const label = {
   property: (t: string) => t === "apartment" ? "Апартамент" : t === "house" ? "Къща" : "Без значение",
@@ -24,8 +25,8 @@ const BrokerOfferDetail = () => {
   const { user, loading: authLoading } = useAuth();
   const backNav = useBackNavigation({ fallbackLabel: "Моите оферти", fallbackPath: "/my-responses" });
   
-  const [request, setRequest] = useState<any>(null);
-  const [myOffers, setMyOffers] = useState<any[]>([]);
+  const [request, setRequest] = useState<RentalRequest | null>(null);
+  const [myOffers, setMyOffers] = useState<Offer[]>([]);
   const [seekerPhone, setSeekerPhone] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 

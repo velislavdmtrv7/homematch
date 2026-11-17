@@ -19,6 +19,9 @@ import { MapContainer, TileLayer, Circle } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 import { API_URL } from "@/lib/api";
+import { ApiPhoto, Offer, ResponderProfile } from "@/types/api";
+
+type ProviderTarget = ResponderProfile & { id: string };
 
 const label = {
   property: (t: string) => t === "apartment" ? "Апартамент" : t === "house" ? "Къща" : "Без значение",
@@ -32,7 +35,7 @@ const SeekerOfferDetail = () => {
   const { user, loading: authLoading } = useAuth();
   const backNav = useBackNavigation({ fallbackLabel: "Оферти", fallbackPath: "/my-received-offers" });
 
-  const [resp, setResp] = useState<any>(null);
+  const [resp, setResp] = useState<Offer | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -44,8 +47,8 @@ const SeekerOfferDetail = () => {
   const [touchStart, setTouchStart] = useState<number | null>(null);
 
   // Dialogs
-  const [profileTarget, setProfileTarget] = useState<any>(null);
-  const [reviewTarget, setReviewTarget] = useState<any>(null);
+  const [profileTarget, setProfileTarget] = useState<ProviderTarget | null>(null);
+  const [reviewTarget, setReviewTarget] = useState<ProviderTarget | null>(null);
   const [hasReviewed, setHasReviewed] = useState(false); // <--- НОВ СТЕЙТ
 
   // Проверка дали вече сме оставили ревю на този брокер
@@ -86,7 +89,7 @@ const SeekerOfferDetail = () => {
       setResp(data);
       
       if (data.photos && data.photos.length > 0) {
-        setPhotos(data.photos.map((p: any) => p.data));
+        setPhotos(data.photos.map((p: ApiPhoto) => p.data));
       }
     } catch (err) {
       setResp(null);

@@ -7,6 +7,7 @@ import { Star } from "lucide-react";
 import { toast } from "sonner";
 
 import { API_URL } from "@/lib/api";
+import { errorMessage } from "@/types/api";
 
 interface ReviewDialogProps {
   open: boolean;
@@ -50,8 +51,8 @@ const ReviewDialog = ({ open, onOpenChange, providerId, responseId, onSuccess }:
       toast.success("Отзивът ви е записан успешно!");
       onOpenChange(false);
       if (onSuccess) onSuccess(); // <--- ДОБАВЯМЕ ТОВА
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      toast.error(errorMessage(error));
     } finally {
       setSubmitting(false);
     }
