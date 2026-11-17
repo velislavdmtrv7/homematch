@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Phone, Mail, User, Check, Shield } from "lucide-react";
 
 import { API_URL } from "@/lib/api";
+import { errorMessage } from "@/types/api";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -89,8 +90,8 @@ const Profile = () => {
         setVerificationStep("sent");
         toast.success(`Кодът е изпратен на ${formatted}`);
       }
-    } catch (err: any) {
-      toast.error(err.message || "Грешка при запазване. Опитайте отново.");
+    } catch (err) {
+      toast.error(errorMessage(err, "Грешка при запазване. Опитайте отново."));
     } finally {
       setSendingCode(false);
     }
@@ -125,8 +126,8 @@ const Profile = () => {
       
       await refreshProfile();
       toast.success("Профилът е обновен!");
-    } catch (err: any) {
-      toast.error(err.message || "Грешка при запазване");
+    } catch (err) {
+      toast.error(errorMessage(err, "Грешка при запазване"));
     } finally {
       setSaving(false);
     }

@@ -21,7 +21,7 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 // Фикс за иконките на Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
+delete (L.Icon.Default.prototype as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
   iconRetinaUrl: markerIcon2x,
@@ -29,6 +29,7 @@ L.Icon.Default.mergeOptions({
 });
 
 import { API_URL } from "@/lib/api";
+import { errorMessage, ApiPhoto } from "@/types/api";
 const MAX_PHOTOS = 8;
 const DEFAULT_CENTER: [number, number] = [42.6977, 23.3219]; // София център
 
@@ -129,7 +130,7 @@ const SavedPropertyForm = () => {
         }
 
         if (prop.photos && prop.photos.length > 0) {
-          const mapped: PhotoItem[] = prop.photos.map((ph: any) => ({
+          const mapped: PhotoItem[] = prop.photos.map((ph: ApiPhoto) => ({
             preview: ph.data,
             isCover: ph.is_cover,
             data: ph.data
@@ -274,8 +275,8 @@ const SavedPropertyForm = () => {
       } else {
         navigate("/properties");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Грешка при запазване");
+    } catch (error) {
+      toast.error(errorMessage(error, "Грешка при запазване"));
     } finally {
       setSaving(false);
     }

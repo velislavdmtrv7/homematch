@@ -7,6 +7,7 @@ import { ArrowLeft, Bell, Inbox, MessageSquare, UserCheck, XCircle, Star } from 
 import { navState } from "@/hooks/useBackNavigation";
 
 import { API_URL } from "@/lib/api";
+import { AppNotification } from "@/types/api";
 
 const iconMap: Record<string, React.ReactNode> = {
   new_response: <MessageSquare className="h-4 w-4 text-primary" />,
@@ -30,7 +31,7 @@ const timeAgo = (date: string) => {
 const Notifications = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [fetching, setFetching] = useState(true);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ const Notifications = () => {
       setFetching(false);
 
       // 2. Маркираме ги като прочетени
-      if (data && data.some((n: any) => !n.read)) {
+      if (data && data.some((n: AppNotification) => !n.read)) {
         await fetch(`${API_URL}/notifications/read-all/${user.id}`, {
           method: "PUT",
           headers

@@ -25,6 +25,7 @@ type PetsType = "yes" | "no" | "flexible";
 type AllowBrokersType = "both" | "owners_only" | "yes";
 
 import { API_URL } from "@/lib/api";
+import { errorMessage } from "@/types/api";
 
 const STEPS = [
   { label: "Основни", icon: <MapPin className="h-4 w-4" /> },
@@ -82,7 +83,9 @@ const loadDraft = (): FormData => {
   try {
     const saved = sessionStorage.getItem(STORAGE_KEY);
     if (saved) return { ...defaultFormData, ...JSON.parse(saved) };
-  } catch {}
+  } catch {
+    // Повреден запис в sessionStorage: започваме с празна форма.
+  }
   return defaultFormData;
 };
 
@@ -246,8 +249,8 @@ const NewRequest = () => {
         toast.success("Заявката е публикувана успешно!");
         navigate("/my-requests");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Грешка при публикуване");
+    } catch (error) {
+      toast.error(errorMessage(error, "Грешка при публикуване"));
     } finally {
       setSubmitting(false);
     }

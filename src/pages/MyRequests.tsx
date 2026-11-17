@@ -13,11 +13,12 @@ import { Home, ArrowLeft, Plus, MapPin, BedDouble, Clock, MessageSquare, Ruler, 
 import { navState } from "@/hooks/useBackNavigation";
 
 import { API_URL } from "@/lib/api";
+import { errorMessage, Offer, RentalRequest } from "@/types/api";
 
 const MyRequests = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<RentalRequest[]>([]);
   const [responseCounts, setResponseCounts] = useState<Record<string, number>>({});
   const [fetching, setFetching] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -45,7 +46,7 @@ const MyRequests = () => {
           const offersData = await offersRes.json();
           
           const counts: Record<string, number> = {};
-          offersData.forEach((offer: any) => {
+          offersData.forEach((offer: Offer) => {
             counts[offer.request_id] = (counts[offer.request_id] || 0) + 1;
           });
           setResponseCounts(counts);
@@ -72,8 +73,8 @@ const MyRequests = () => {
 
       setRequests((prev) => prev.filter((r) => r._id !== deleteTarget));
       toast.success("Заявката е изтрита");
-    } catch (e: any) {
-      toast.error(e.message || "Грешка при изтриване");
+    } catch (e) {
+      toast.error(errorMessage(e, "Грешка при изтриване"));
     } finally {
       setDeleting(false);
       setDeleteTarget(null);

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { Home, Building2, User, ArrowLeft } from "lucide-react";
+import { errorMessage } from "@/types/api";
 
 type UserRole = "seeker" | "broker" | "owner";
 
@@ -57,8 +58,8 @@ const Auth = () => {
         toast.success("Регистрацията е успешна!");
         navigate("/dashboard");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Възникна грешка");
+    } catch (error) {
+      toast.error(errorMessage(error, "Възникна грешка"));
     } finally {
       setLoading(false);
     }

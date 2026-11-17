@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Plus, Home, Pencil, ImageIcon, Trash2 } from "lucide-react";
 
 import { API_URL } from "@/lib/api";
+import { errorMessage, ApiPhoto } from "@/types/api";
 
 interface SavedProperty {
   _id: string;
@@ -26,7 +27,7 @@ interface SavedProperty {
   description: string;
   status: string;
   createdAt: string;
-  photos?: any[];
+  photos?: ApiPhoto[];
   cover_url?: string;
 }
 
@@ -55,8 +56,8 @@ const MyProperties = () => {
         const data = await res.json();
 
         // Изваждаме cover снимката от масива photos
-        const formattedData = data.map((p: any) => {
-          const coverPhoto = p.photos?.find((photo: any) => photo.is_cover)?.data;
+        const formattedData = data.map((p: SavedProperty) => {
+          const coverPhoto = p.photos?.find((photo: ApiPhoto) => photo.is_cover)?.data;
           return { ...p, cover_url: coverPhoto };
         });
 
@@ -106,8 +107,8 @@ const MyProperties = () => {
 
       setProperties((prev) => prev.filter((p) => p._id !== deleteTarget));
       toast.success("Имотът е изтрит");
-    } catch (e: any) {
-      toast.error(e.message || "Грешка при изтриване");
+    } catch (e) {
+      toast.error(errorMessage(e, "Грешка при изтриване"));
     } finally {
       setDeleting(false);
       setDeleteTarget(null);

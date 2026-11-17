@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Send, Home, Info, CheckCircle2 } from "lucide-react";
 
 import { API_URL } from "@/lib/api";
+import { errorMessage, SavedProperty } from "@/types/api";
 const MAX_DAILY_RESPONSES = 5;
 
 const SubmitResponse = () => {
@@ -21,7 +22,7 @@ const SubmitResponse = () => {
   const backNav = useBackNavigation({ fallbackLabel: "Към заявката", fallbackPath: `/requests/${requestId}` });
 
   const [requestCity, setRequestCity] = useState("");
-  const [myProperties, setMyProperties] = useState<any[]>([]);
+  const [myProperties, setMyProperties] = useState<SavedProperty[]>([]);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>(preselectedPropertyId || "");
   const [customNote, setCustomNote] = useState("");
   
@@ -58,7 +59,7 @@ const SubmitResponse = () => {
         if (propsRes.ok) {
           const propsData = await propsRes.json();
           setMyProperties(propsData);
-          if (preselectedPropertyId && propsData.some((p: any) => p._id === preselectedPropertyId)) {
+          if (preselectedPropertyId && propsData.some((p: SavedProperty) => p._id === preselectedPropertyId)) {
             setSelectedPropertyId(preselectedPropertyId);
           }
         }
@@ -114,8 +115,8 @@ const SubmitResponse = () => {
 
       toast.success("Предложението е изпратено успешно!");
       navigate(`/requests/${requestId}`);
-    } catch (error: any) {
-      toast.error(error.message || "Грешка при изпращане");
+    } catch (error) {
+      toast.error(errorMessage(error, "Грешка при изпращане"));
     } finally {
       setSubmitting(false);
     }

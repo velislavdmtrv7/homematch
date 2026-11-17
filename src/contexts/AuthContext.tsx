@@ -18,14 +18,20 @@ export interface Profile {
   provider_type?: "agency" | "freelance" | "broker" | "owner" | null;
 }
 
+export interface SignUpMeta {
+  full_name: string;
+  role: Profile["role"];
+  provider_type?: Profile["provider_type"];
+}
+
 interface AuthContextType {
-  session: any | null; // Оставяме го за обратна съвместимост, въпреки че ползваме JWT
+  session: { access_token: string | null } | null; // Оставяме го за обратна съвместимост, въпреки че ползваме JWT
   user: User | null;
   profile: Profile | null;
   loading: boolean;
   activeMode: ActiveMode;
   signIn: (email: string, pass: string) => Promise<void>;
-  signUp: (email: string, pass: string, meta: any) => Promise<void>;
+  signUp: (email: string, pass: string, meta: SignUpMeta) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   setActiveMode: (mode: ActiveMode) => Promise<void>;
@@ -95,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, pass: string, meta: any) => {
+  const signUp = async (email: string, pass: string, meta: SignUpMeta) => {
     const payload = {
       email,
       password: pass,
@@ -143,7 +149,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const parsedUser = JSON.parse(savedUser);
         setProfile({ ...parsedUser, id: parsedUser._id });
-      } catch (err) {}
+      } catch (err) {
+        console.error("Грешка при четене на профила:", err);
+      }
     }
   };
 

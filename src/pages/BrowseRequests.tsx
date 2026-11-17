@@ -14,6 +14,7 @@ import {
 import { navState } from "@/hooks/useBackNavigation";
 
 import { API_URL } from "@/lib/api";
+import { errorMessage, RentalRequest } from "@/types/api";
 
 interface MyOfferSummary {
   total: number;
@@ -40,7 +41,7 @@ const brokersLabel = (t: string) =>
 const BrowseRequests = () => {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<RentalRequest[]>([]);
   const [respondedMap, setRespondedMap] = useState<Record<string, MyOfferSummary>>({});
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,11 +99,11 @@ const BrowseRequests = () => {
 
         const now = Date.now();
         const active = (data || []).filter(
-          (r: any) => new Date(r.expires_at).getTime() > now
+          (r: RentalRequest) => new Date(r.expires_at).getTime() > now
         );
         setRequests(active);
-      } catch (e: any) {
-        setError(e.message || "Грешка при зареждане на данните");
+      } catch (e) {
+        setError(errorMessage(e, "Грешка при зареждане на данните"));
       } finally {
         setFetching(false);
       }
