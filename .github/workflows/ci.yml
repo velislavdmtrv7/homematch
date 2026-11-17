@@ -19,3 +19,26 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
+  build: 
+    runs-on: ubuntu-latest
+    env: 
+      TRIVY_VERSION: "0.76.2"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Trivy
+        run: |
+          cd /tmp
+          curl -fsSLO https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+          curl -fsSLO https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_checksums.txt
+          sha256sum --check --ignore-missing trivy_${TRIVY_VERSION}_checksums.txt
+          tar -xzf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz trivy
+          sudo install -m 755 trivy /usr/local/bin/trivy
+      - name: Build api
+        run: docker build -t homematch-api:ci ./server
+      - name: Build web
+        run: docker build -t homematch-web:ci -f nginx/Dockerfile .
+      - name: Scan api
+        run: trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress homematch-api:ci
+      - name: Scan web
+        run: trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress homematch-web:ci
