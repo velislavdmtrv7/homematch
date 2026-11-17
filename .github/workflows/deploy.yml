@@ -1,0 +1,40 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+permissions: 
+  contents: read
+  packages: write
+jobs: 
+  publish: 
+    runs-on: ubuntu-latest
+    env: 
+      TRIVY_VERSION: "0.76.2"
+      API_IMAGE: ghcr.io/velislavdmtrv7/homematch-api
+      WEB_IMAGE: ghcr.io/velislavdmtrv7/homematch-web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Trivy
+        run: |
+          cd /tmp
+          curl -fsSLO https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+          curl -fsSLO https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_checksums.txt
+          sha256sum --check --ignore-missing trivy_${TRIVY_VERSION}_checksums.txt
+          tar -xzf trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz trivy
+          sudo install -m 755 trivy /usr/local/bin/trivy
+      - name: Build api
+        run: docker build -t "$API_IMAGE:$GITHUB_SHA" ./server
+      - name: Build web
+        run: docker build -t "$WEB_IMAGE:$GITHUB_SHA" -f nginx/Dockerfile .
+      - name: Scan api
+        run: trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress "$API_IMAGE:$GITHUB_SHA"
+      - name: Scan web
+        run: trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress "$WEB_IMAGE:$GITHUB_SHA"
+      - name: Log in to GHCR and push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: | 
+          echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker push "$API_IMAGE:$GITHUB_SHA" 
+          docker push "$WEB_IMAGE:$GITHUB_SHA"
